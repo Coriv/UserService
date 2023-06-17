@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Transactional
 @Repository
-public interface UserDao extends CrudRepository<User, Integer> {
+public interface UserDao extends CrudRepository<User, Long> {
 }
