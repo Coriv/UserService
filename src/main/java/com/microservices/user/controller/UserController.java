@@ -1,5 +1,6 @@
 package com.microservices.user.controller;
 
+import com.microservices.user.config.ValueAmqpConfig;
 import com.microservices.user.dto.AuthenticationDto;
 import com.microservices.user.dto.UserDto;
 import com.microservices.user.entity.User;
@@ -9,6 +10,7 @@ import com.microservices.user.service.AuthService;
 import com.microservices.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +25,8 @@ public class UserController {
     private final UserService userService;
     private final AuthService authService;
     private final UserMapper userMapper;
+    private final RabbitTemplate rabbitTemplate;
+    private final ValueAmqpConfig amqpConfig;
 
     @GetMapping
     public ResponseEntity<List<UserDto>> fetchAllUsers() {
@@ -38,6 +42,7 @@ public class UserController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createUser(@Valid @RequestBody UserDto userDto) {
+
         var user = userMapper.mapToUser(userDto);
         var savedUser = userService.registerUser(user);
         var authDto = AuthenticationDto.builder()
@@ -45,6 +50,7 @@ public class UserController {
                 .username(userDto.getUsername())
                 .password(userDto.getPassword());
         var token = authService.registerUserAuth(authDto);
+        rabbitTemplate.convertAndSend(amqpConfig.getTOPIC_EXCHANGE(), amqpConfig.getQUEUE(), user.getEmail());
         return ResponseEntity.ok(token);
 
     }

@@ -1,6 +1,5 @@
-package com.microservices.user.Config;
+package com.microservices.user.config;
 
-import lombok.Builder;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,4 +13,9 @@ public class CoreConfig {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
+
+//    @Bean
+//    public MessageConverter messageConverter() {
+//        return new Jackson2JsonMessageConverter();
+//    }
 }
