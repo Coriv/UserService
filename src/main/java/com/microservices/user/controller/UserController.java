@@ -6,6 +6,7 @@ import com.microservices.user.dto.UserDto;
 import com.microservices.user.entity.User;
 import com.microservices.user.exception.InvalidUserIdException;
 import com.microservices.user.mapper.UserMapper;
+import com.microservices.user.service.AmqpService;
 import com.microservices.user.service.AuthService;
 import com.microservices.user.service.UserService;
 import jakarta.validation.Valid;
@@ -25,9 +26,7 @@ public class UserController {
     private final UserService userService;
     private final AuthService authService;
     private final UserMapper userMapper;
-    private final RabbitTemplate rabbitTemplate;
-    private final ValueAmqpConfig amqpConfig;
-
+    private final AmqpService amqpService;
     @GetMapping
     public ResponseEntity<List<UserDto>> fetchAllUsers() {
         List<User> usersList = userService.getAllUsers();
@@ -50,7 +49,7 @@ public class UserController {
                 .username(userDto.getUsername())
                 .password(userDto.getPassword());
         var token = authService.registerUserAuth(authDto);
-        rabbitTemplate.convertAndSend(amqpConfig.getTOPIC_EXCHANGE(), amqpConfig.getQUEUE(), user.getEmail());
+        amqpService.notifyByEmail(savedUser.getEmail());
         return ResponseEntity.ok(token);
 
     }
