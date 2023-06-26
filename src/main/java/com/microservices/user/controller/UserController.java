@@ -1,17 +1,17 @@
 package com.microservices.user.controller;
 
-import com.microservices.user.config.ValueAmqpConfig;
 import com.microservices.user.dto.AuthenticationDto;
 import com.microservices.user.dto.UserDto;
 import com.microservices.user.entity.User;
 import com.microservices.user.exception.InvalidUserIdException;
+import com.microservices.user.feign.AuthClient;
+import com.microservices.user.feign.WalletClient;
+import com.microservices.user.feign.WalletCryptoClient;
 import com.microservices.user.mapper.UserMapper;
 import com.microservices.user.service.AmqpService;
-import com.microservices.user.service.AuthService;
 import com.microservices.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +24,10 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final AuthService authService;
     private final UserMapper userMapper;
+    private final AuthClient authClient;
+    private final WalletClient walletClient;
+    private final WalletCryptoClient walletCryptoClient;
     private final AmqpService amqpService;
     @GetMapping
     public ResponseEntity<List<UserDto>> fetchAllUsers() {
@@ -44,14 +46,17 @@ public class UserController {
 
         var user = userMapper.mapToUser(userDto);
         var savedUser = userService.registerUser(user);
+        var id = savedUser.getId();
         var authDto = AuthenticationDto.builder()
-                .userId(savedUser.getId())
+                .userId(id)
                 .username(userDto.getUsername())
-                .password(userDto.getPassword());
-        var token = authService.registerUserAuth(authDto);
-        amqpService.notifyByEmail(savedUser.getEmail());
+                .password(userDto.getPassword())
+                .build();
+        var token = authClient.registerUserAuth(authDto);
+        walletClient.createWalletForNewUser(id);
+        walletCryptoClient.createCryptoWallets(id);
+        amqpService.notifyNewUserByEmail(savedUser.getEmail());
         return ResponseEntity.ok(token);
-
     }
 
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)

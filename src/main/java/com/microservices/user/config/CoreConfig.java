@@ -8,12 +8,6 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class CoreConfig {
 
-    @Bean
-    @LoadBalanced
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
-
 //    @Bean
 //    public MessageConverter messageConverter() {
 //        return new Jackson2JsonMessageConverter();

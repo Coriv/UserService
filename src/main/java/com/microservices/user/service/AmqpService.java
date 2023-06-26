@@ -12,7 +12,7 @@ public class AmqpService {
     private final RabbitTemplate rabbitTemplate;
     private final ValueAmqpConfig amqpConfig;
 
-    public void notifyByEmail(String email) {
+    public void notifyNewUserByEmail(String email) {
         rabbitTemplate.convertAndSend(amqpConfig.getTOPIC_EXCHANGE(), amqpConfig.getQUEUE(), email);
     }
 }
