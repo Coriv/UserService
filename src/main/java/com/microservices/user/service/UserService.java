@@ -24,7 +24,6 @@ public class UserService {
         return userDao.findById(userId).orElseThrow(InvalidUserIdException::new);
     }
 
-
     public User registerUser(User user) {
         user.setDateOfJoin(LocalDateTime.now());
         return userDao.save(user);

@@ -41,7 +41,7 @@ public class UserController {
         return ResponseEntity.ok(userMapper.mapToUserDto(user));
     }
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "register", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> createUser(@Valid @RequestBody UserDto userDto) {
 
         var user = userMapper.mapToUser(userDto);

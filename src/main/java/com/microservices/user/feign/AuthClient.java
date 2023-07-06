@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 @FeignClient(name = "AUTHENTICATION")
 public interface AuthClient {
 
-    @PostMapping(value = "/auth/register")
+    @PostMapping(value = "v1/auth/register")
     String registerUserAuth(AuthenticationDto authDto);
 }
